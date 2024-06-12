@@ -20,3 +20,7 @@ servidorHttp.listen(porta, () => console.log("servidor escutando"));
 
 
 const io = new Server(servidorHttp);
+
+io.on("connection", () => {
+    console.log("Um cliente se conectou");
+});
