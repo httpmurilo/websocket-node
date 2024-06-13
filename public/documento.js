@@ -1,4 +1,5 @@
 import { emitirTextoEditor } from "./socket-front-documento.js";
+import { selecionarDocumento } from "./socket-front-documento.js";
 
 //codigo que interage somente com html
 
@@ -13,8 +14,7 @@ tituloDocumento.textContent = nomeDocumento || "Documento sem titulo";
 selecionarDocumento(nomeDocumento);
 
 textoEditor.addEventListener("keyup", () => {
-    console.log("Soltou tecla");
-    emitirTextoEditor(textoEditor.value);
+    emitirTextoEditor(textoEditor.value, nomeDocumento);
 });
 
 function atualizaTextoEditor(texto) {

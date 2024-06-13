@@ -6,13 +6,11 @@ const socket = io();
 
 function selecionarDocumento(nome) {
     socket.emit("selecionar_documento", nome);
-
-
 }
 
 
-function emitirTextoEditor(texto) {
-    socket.emit("texto_editor", texto );
+function emitirTextoEditor(texto, nomeDocumento) {
+    socket.emit("texto_editor", texto, nomeDocumento);
 }
 
 socket.on("texto_editor_clientes", (texto) => {
