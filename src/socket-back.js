@@ -16,7 +16,7 @@ io.on("connection", (socket) => {
         //envia o evento pra todos menos pra quem ta conectado nesse socket
         //socket.broadcast.emit("texto_editor_clientes", texto);
        
-        socket.on("texto_editor", (texto, nomeDocumento) => {
+        socket.on("texto_editor", ({texto, nomeDocumento}) => {
             //posta somente na sala
             socket.to(nomeDocumento).emit("texto_editor_clientes", texto);
 
