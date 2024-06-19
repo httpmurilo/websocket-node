@@ -42,8 +42,16 @@ io.on("connection", (socket) => {
         //socket.broadcast.emit("texto_editor_clientes", texto);
        
         socket.on("texto_editor", ({texto, nomeDocumento}) => {
-            //posta somente na sala
+
+            const documento = encontrarDocumento(nomeDocumento);
+
+            if(documento) {
+                documento.texto = texto;
+                //posta somente na sala
             socket.to(nomeDocumento).emit("texto_editor_clientes", texto);
+            }
+
+            
 
 
         });
