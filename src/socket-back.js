@@ -1,65 +1,56 @@
+import {
+  adicionarDocumento,
+  atualizaDocumento,
+  encontrarDocumento,
+  excluirDocumento,
+  obterDocumentos,
+} from "./documentosDb.js";
 import io from "./servidor.js";
 
-const documentos = [
-    {
-        nome: "JavaScript",
-        texto: "texto de javascript"
-    },
-    {
-        nome: "Node",
-        texto: "texto de Node"
-    },
-    {
-        nome: "Socket.io",
-        texto: "texto de SocketIO"
-    }
-
-]
-
-
 io.on("connection", (socket) => {
-    console.log("Um cliente se conectou :ID :", socket.id);
+  socket.on("obter_documentos", async (devolverDocumentos) => {
+    const documentos = await obterDocumentos();
 
-    
+    devolverDocumentos(documentos);
+  });
 
-        socket.on("selecionar_documento", (nomeDocumento, devolverTexto) =>{
-            //cliente que ta conectado agora, coloca em uma sala, conceito do socket.io que vai agrupar clients
+  socket.on("adicionar_documento", async (nome) => {
+    const documentoExiste = (await encontrarDocumento(nome)) !== null;
 
+    if (documentoExiste) {
+      socket.emit("documento_existente", nome);
+    } else {
+      const resultado = await adicionarDocumento(nome);
 
-            socket.join(nomeDocumento);
+      if (resultado.acknowledged) {
+        io.emit("adicionar_documento_interface", nome);
+      }
+    }
+  });
 
-            const documento = encontrarDocumento(nomeDocumento);
+  socket.on("selecionar_documento", async (nomeDocumento, devolverTexto) => {
+    socket.join(nomeDocumento);
 
-            if(documento) {
-                devolverTexto(documento.texto);
-            }
-            
-           
+    const documento = await encontrarDocumento(nomeDocumento);
 
-        } );
-        
-        //envia o evento pra todos menos pra quem ta conectado nesse socket
-        //socket.broadcast.emit("texto_editor_clientes", texto);
-       
-        socket.on("texto_editor", ({texto, nomeDocumento}) => {
+    if (documento) {
+      devolverTexto(documento.texto);
+    }
+  });
 
-            const documento = encontrarDocumento(nomeDocumento);
+  socket.on("texto_editor", async ({ texto, nomeDocumento }) => {
+    const atualizacao = await atualizaDocumento(nomeDocumento, texto);
 
-            if(documento) {
-                documento.texto = texto;
-                //posta somente na sala
-            socket.to(nomeDocumento).emit("texto_editor_clientes", texto);
-            }
+    if (atualizacao.modifiedCount) {
+      socket.to(nomeDocumento).emit("texto_editor_clientes", texto);
+    }
+  });
 
-            
+  socket.on("excluir_documento", async (nome) => {
+    const resultado = await excluirDocumento(nome);
 
-
-        });
+    if (resultado.deletedCount) {
+      io.emit("excluir_documento_sucesso", nome);
+    }
+  });
 });
-
-function encontrarDocumento(nome) {
-    const documento  = documentos.find(() => {
-        return documento.nome === nome;
-    });
-    return documento;
-}
